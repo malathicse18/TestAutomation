@@ -14,10 +14,11 @@ def cleanup_menu():
 
 def compress_menu():
     directory = input("Enter the directory path: ")
+    compressed_file_name = input("Enter the name for the compressed file: ")
     single_file = input("Enter the file to compress (leave blank to compress all files): ")
     format = input("Enter the compression format (zip, tar): ")
     delete_original = input("Delete original files after compression? (yes/no): ").lower() == 'yes'
-    compress_files(directory, single_file if single_file else None, format, delete_original)
+    compress_files(directory, compressed_file_name, single_file if single_file else None, format, delete_original)
 
 def main():
     while True:
