@@ -1,9 +1,14 @@
-import click
-from cleanup import delete_all_files
-from compression import compress_files
+import sys
+import os
+
+# Add the parent directory to the sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from file_cleanup_project.Tasks.cleanup import delete_all_files
+from file_cleanup_project.Tasks.compression import compress_files
 
 def show_menu():
-    print("File Management CLI")
+    print("\nFile Management CLI")
     print("1. Cleanup all files")
     print("2. Compress files")
     print("3. Exit")

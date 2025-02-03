@@ -25,7 +25,7 @@ func cleanupHandler(c *gin.Context) {
 
 	fmt.Println("📂 Directory received:", request.Directory)
 
-	pythonScriptPath := "cleanfiles/cleanup.py" // Update if needed
+	pythonScriptPath := "file_cleanup_project/Tasks/cleanup.py" // Update if needed
 
 	// Run Python script
 	cmd := exec.Command("python", pythonScriptPath, request.Directory) // For Windows use "python" instead of "python3"

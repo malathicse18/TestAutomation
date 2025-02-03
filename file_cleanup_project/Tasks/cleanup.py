@@ -1,5 +1,5 @@
 import os
-from db import log_deletion
+from file_cleanup_project.db.db import log_deletion
 
 def delete_all_files(directory):
     for filename in os.listdir(directory):

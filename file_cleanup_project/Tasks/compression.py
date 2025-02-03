@@ -1,7 +1,7 @@
 import os
 import zipfile
 import tarfile
-from db import log_compression
+from file_cleanup_project.db.db import log_compression
 
 def compress_files(directory, compressed_file_name, single_file=None, format='zip', delete_original=False):
     if single_file:
