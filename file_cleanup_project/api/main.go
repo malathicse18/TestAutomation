@@ -25,12 +25,13 @@ func cleanupHandler(c *gin.Context) {
 
 	fmt.Println("📂 Directory received:", request.Directory)
 
-	pythonScriptPath := "file_cleanup_project/Tasks/cleanup.py" // Update if needed
+	//pythonScriptPath := "./file_cleanup_project/Tasks/cleanup.py" // Ensure correct path
+	cmd := exec.Command(`C:\Users\malatk\Music\TestAutomation\venv\Scripts\python.exe`,
+		`C:\Users\malatk\Music\TestAutomation\file_cleanup_project\Tasks\cleanup.py`)
 
-	// Run Python script
-	cmd := exec.Command("python", pythonScriptPath, request.Directory) // For Windows use "python" instead of "python3"
+	// Use "python3" for Linux/macOS
+
 	output, err := cmd.CombinedOutput()
-
 	fmt.Println("🐍 Python Output:", string(output))
 
 	if err != nil {
@@ -47,8 +48,8 @@ func main() {
 	router.POST("/cleanup", cleanupHandler)
 
 	port := "8080"
-	fmt.Println("Server running on port", port)
+	fmt.Println("🚀 Server running on port", port)
 	if err := router.Run(":" + port); err != nil {
-		log.Fatal("Failed to start server:", err)
+		log.Fatal("❌ Failed to start server:", err)
 	}
 }

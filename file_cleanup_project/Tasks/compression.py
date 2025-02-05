@@ -1,15 +1,16 @@
 import os
 import zipfile
 import tarfile
-from file_cleanup_project.db.db import log_compression
+from db.db import log_compression
 
 def compress_files(directory, compressed_file_name, single_file=None, format='zip', delete_original=False):
+    """Compress files in a given directory into ZIP or TAR format"""
+    if not os.path.isdir(directory):
+        print(f"❌ Error: {directory} is not a valid directory.")
+        return
+
     if single_file:
-        file_path = os.path.join(directory, single_file)
-        if not os.path.isfile(file_path):
-            print(f"Error: The file {file_path} does not exist.")
-            return
-        files_to_compress = [file_path]
+        files_to_compress = [os.path.join(directory, single_file)]
     else:
         files_to_compress = [os.path.join(directory, f) for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
 
@@ -24,21 +25,29 @@ def compress_files(directory, compressed_file_name, single_file=None, format='zi
             with tarfile.open(compressed_filename, 'w:gz') as tarf:
                 for file in files_to_compress:
                     tarf.add(file, arcname=os.path.basename(file))
+        else:
+            print("❌ Unsupported format! Use 'zip' or 'tar'.")
+            return
 
+        # Log and delete original files if required
         for file in files_to_compress:
             file_size = os.path.getsize(file) / (1024 * 1024)  # MB
             compressed_size = os.path.getsize(compressed_filename) / (1024 * 1024)  # MB
             log_compression(os.path.basename(file), compressed_filename, format, file_size, compressed_size)
+
             if delete_original:
                 os.remove(file)
-        print(f"Files compressed successfully into {compressed_filename}")
+
+        print(f"✅ Files compressed into: {compressed_filename}")
+
     except Exception as e:
-        print(f"Error during compression: {e}")
+        print(f"❌ Error during compression: {e}")
 
 if __name__ == "__main__":
-    directory = input("Enter the directory path: ")
-    compressed_file_name = input("Enter the name for the compressed file: ")
-    single_file = input("Enter the file to compress (leave blank to compress all files): ")
-    format = input("Enter the compression format (zip, tar): ")
-    delete_original = input("Delete original files after compression? (yes/no): ").lower() == 'yes'
+    directory = input("📁 Enter directory: ").strip()
+    compressed_file_name = input("📦 Compressed file name: ").strip()
+    single_file = input("📄 File to compress (leave blank for all): ").strip()
+    format = input("🔄 Format (zip/tar): ").strip().lower()
+    delete_original = input("❌ Delete originals? (yes/no): ").strip().lower() == 'yes'
+
     compress_files(directory, compressed_file_name, single_file if single_file else None, format, delete_original)
