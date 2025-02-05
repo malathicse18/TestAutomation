@@ -18,7 +18,7 @@ func cleanupHandler(c *gin.Context) {
 
 	var request CleanupRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		fmt.Println("❌ Error parsing JSON:", err)
+		fmt.Println("Error parsing JSON:", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
 		return
 	}
