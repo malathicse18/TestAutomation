@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"os/exec"
 
@@ -13,43 +13,46 @@ type CleanupRequest struct {
 	Directory string `json:"directory"`
 }
 
+func runCleanup(directory string) (string, error) {
+	cmd := exec.Command("python", "file_cleanup_project\\Tasks\\cleanup.py", directory)
+	var out bytes.Buffer
+	cmd.Stdout = &out
+	err := cmd.Run()
+	return out.String(), err
+}
+
 func cleanupHandler(c *gin.Context) {
-	fmt.Println("✅ Received a cleanup request")
-
-	var request CleanupRequest
-	if err := c.ShouldBindJSON(&request); err != nil {
-		fmt.Println("❌ Error parsing JSON:", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+	var req CleanupRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
 		return
 	}
 
-	fmt.Println("📂 Directory received:", request.Directory)
-
-	//pythonScriptPath := "./file_cleanup_project/Tasks/cleanup.py" // Ensure correct path
-	cmd := exec.Command(`C:\Users\malatk\Music\TestAutomation\venv\Scripts\python.exe`,
-		`C:\Users\malatk\Music\TestAutomation\file_cleanup_project\Tasks\cleanup.py`)
-
-	// Use "python3" for Linux/macOS
-
-	output, err := cmd.CombinedOutput()
-	fmt.Println("🐍 Python Output:", string(output))
-
+	output, err := runCleanup(req.Directory)
 	if err != nil {
-		fmt.Println("❌ Error executing Python script:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error(), "output": string(output)})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error running cleanup", "details": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Cleanup executed", "output": string(output)})
+	c.JSON(http.StatusOK, gin.H{"message": "Cleanup triggered", "output": output})
+}
+
+func logsHandler(c *gin.Context) {
+	resp, err := http.Get("http://localhost:5000/logs")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch logs"})
+		return
+	}
+	defer resp.Body.Close()
+
+	var logs []map[string]interface{}
+	json.NewDecoder(resp.Body).Decode(&logs)
+	c.JSON(http.StatusOK, logs)
 }
 
 func main() {
-	router := gin.Default()
-	router.POST("/cleanup", cleanupHandler)
-
-	port := "8080"
-	fmt.Println("🚀 Server running on port", port)
-	if err := router.Run(":" + port); err != nil {
-		log.Fatal("❌ Failed to start server:", err)
-	}
+	r := gin.Default()
+	r.POST("/cleanup", cleanupHandler)
+	r.GET("/logs", logsHandler)
+	r.Run(":8080")
 }

@@ -1,48 +1,33 @@
-import sys
-import os
-import subprocess
+import requests
 
-# Add project path for imports
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-from Tasks.cleanup import delete_all_files
-from Tasks.compression import compress_files
+API_URL = "http://localhost:8080/cleanup"
 
 def show_menu():
-    print("\n📂 File Management CLI")
-    print("1️⃣ Cleanup all files in a directory")
-    print("2️⃣ Compress files in a directory")
-    print("3️⃣ Exit")
-
-def cleanup_menu():
-    directory = input("📁 Enter the directory path: ").strip()
-    if not os.path.isdir(directory):
-        print("❌ Invalid directory!")
-        return
-    delete_all_files(directory)
-
-def compress_menu():
-    directory = input("📁 Enter the directory path: ").strip()
-    compressed_file_name = input("📦 Enter compressed file name: ").strip()
-    single_file = input("📄 Enter file to compress (or leave blank for all files): ").strip()
-    format = input("🔄 Compression format (zip/tar): ").strip().lower()
-    delete_original = input("❌ Delete original files after compression? (yes/no): ").strip().lower() == 'yes'
-    
-    compress_files(directory, compressed_file_name, single_file if single_file else None, format, delete_original)
-
-def main():
+    """Display the CLI menu."""
     while True:
-        show_menu()
-        choice = input("📝 Enter your choice: ").strip()
-        if choice == '1':
-            cleanup_menu()
-        elif choice == '2':
-            compress_menu()
-        elif choice == '3':
-            print("👋 Exiting...")
+        print("\n📂 File Management CLI")
+        print("1️⃣ Cleanup files")
+        print("2️⃣ View cleanup logs")
+        print("3️⃣ Exit")
+        choice = input("📝 Enter your choice: ")
+
+        if choice == "1":
+            directory = input("📂 Enter directory path: ")
+            response = requests.post(API_URL, json={"directory": directory})
+            print(f"✅ API Response: {response.json()}")
+
+        elif choice == "2":
+            logs_response = requests.get("http://localhost:8080/logs")
+            logs = logs_response.json()
+            print("\n📝 Cleanup Logs:")
+            for log in logs:
+                print(f"- {log}")
+
+        elif choice == "3":
+            print("🚀 Exiting CLI. Goodbye!")
             break
         else:
-            print("❌ Invalid choice. Please try again.")
+            print("❌ Invalid choice. Please select again.")
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    show_menu()
